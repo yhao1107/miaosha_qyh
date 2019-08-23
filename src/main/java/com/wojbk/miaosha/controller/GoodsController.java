@@ -11,6 +11,8 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.thymeleaf.util.StringUtils;
 
+import javax.servlet.http.HttpServletResponse;
+
 /**
  * @ 2019-5-15 22:00
  * @author qinyonghao
@@ -26,13 +28,13 @@ public class GoodsController {
 
     @RequestMapping("/to_list")
     public String toList(Model model, @CookieValue(value = UserService.COOKIE_NAME_TOKEN,required=false)String cookieToken
-    , @RequestParam(value = UserService.COOKIE_NAME_TOKEN,required=false)String paramToken){
+    , @RequestParam(value = UserService.COOKIE_NAME_TOKEN,required=false)String paramToken, HttpServletResponse response){
         if(StringUtils.isEmpty(cookieToken)&&StringUtils.isEmpty(paramToken)){
             return "login";
         }
         String param=StringUtils.isEmpty(paramToken)?cookieToken:paramToken;
 
-        User user=userService.getByToken(param);
+        User user=userService.getByToken(response,param);
         model.addAttribute("user",user);
 
         return "goods_list";

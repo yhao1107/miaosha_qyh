@@ -57,12 +57,7 @@ public class UserService {
         }
         //生成cookie,将cookie保存到客户端
         String token= UUIDUtil.uuid();
-        redisService.set(UserKey.token,token,user);
-        Cookie cookie=new Cookie(COOKIE_NAME_TOKEN,token);
-        //设置cookie的有效期，设置成与session的有效期一致
-        cookie.setMaxAge(UserKey.token.expireSeconds());
-        cookie.setPath("/");//网站的根目录
-        response.addCookie(cookie);
+        addCookie(response,token,user);
         return true;
     }
     /**
@@ -71,10 +66,27 @@ public class UserService {
      *
      */
     //从缓存获取token
-    public User getByToken(String token) {
+    public User getByToken(HttpServletResponse response,String token) {
         if(StringUtils.isEmpty(token)){
             return null;
         }
-        return redisService.get(UserKey.token,token,User.class);
+        User user= redisService.get(UserKey.token,token,User.class);
+        if(user!=null){
+            //延长有效期
+            addCookie(response,token,user);
+        }
+        return user;
+
+    }
+
+    public void addCookie(HttpServletResponse response,String token,User user){
+
+        redisService.set(UserKey.token,token,user);
+        Cookie cookie=new Cookie(COOKIE_NAME_TOKEN,token);
+        //设置cookie的有效期，设置成与session的有效期一致
+        cookie.setMaxAge(UserKey.token.expireSeconds());
+        cookie.setPath("/");//网站的根目录
+        response.addCookie(cookie);
+
     }
 }
