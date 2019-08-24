@@ -8,6 +8,11 @@ import org.springframework.stereotype.Service;
 
 import java.util.List;
 
+/**
+ * 2019-5-16 20:30
+ * @author qinyonghao
+ */
+
 @Service
 public class GoodsService {
     @Autowired
@@ -17,4 +22,7 @@ public class GoodsService {
     }
 
 
+    public GoodsVo getGoodsVoByGoodsId(long goodsId) {
+        return goodsDao.getGoodsVoByGoodsId(goodsId);
+    }
 }
