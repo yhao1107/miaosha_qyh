@@ -7,6 +7,15 @@ public class Goods {
     private String goodsImg;
     private String goodsDetail;
     private Double goodsPrice;
+    private long goodsStock;
+
+    public long getGoodsStock() {
+        return goodsStock;
+    }
+
+    public void setGoodsStock(long goodsStock) {
+        this.goodsStock = goodsStock;
+    }
 
     public Long getId() {
         return id;

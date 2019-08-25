@@ -79,6 +79,7 @@ public class GoodsController {
             remainSeconds=0;
 
         }
+        //System.out.println("成功");
         model.addAttribute("miaoshaStatus",miaoshaStatus);
         model.addAttribute("remainSeconds",remainSeconds);
 
