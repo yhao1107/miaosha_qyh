@@ -2,18 +2,22 @@ package com.wojbk.miaosha.controller;
 
 
 import com.wojbk.miaosha.entity.User;
+import com.wojbk.miaosha.redis.GoodsKey;
+import com.wojbk.miaosha.redis.RedisService;
 import com.wojbk.miaosha.service.GoodsService;
 import com.wojbk.miaosha.service.UserService;
 import com.wojbk.miaosha.vo.GoodsVo;
+
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.ApplicationContext;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
-import org.springframework.web.bind.annotation.CookieValue;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.*;
+import org.thymeleaf.spring4.context.SpringWebContext;
+import org.thymeleaf.spring4.view.ThymeleafViewResolver;
 import org.thymeleaf.util.StringUtils;
 
+import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.util.List;
 
@@ -31,10 +35,17 @@ public class GoodsController {
     UserService userService;
     @Autowired
     GoodsService goodsService;
+    @Autowired
+    RedisService redisService;
+    @Autowired
+    ThymeleafViewResolver thymeleafViewResolver;
+    @Autowired
+    ApplicationContext applicationContext;
     //商品列表
-    @RequestMapping("/to_list")
+    @RequestMapping(value="/to_list",produces = "text/html")
+    @ResponseBody
     public String toList(Model model, @CookieValue(value = UserService.COOKIE_NAME_TOKEN,required=false)String cookieToken
-    , @RequestParam(value = UserService.COOKIE_NAME_TOKEN,required=false)String paramToken, HttpServletResponse response){
+    , @RequestParam(value = UserService.COOKIE_NAME_TOKEN,required=false)String paramToken, HttpServletResponse response, HttpServletRequest request){
         if(StringUtils.isEmpty(cookieToken)&&StringUtils.isEmpty(paramToken)){
             return "login";
         }
@@ -47,7 +58,21 @@ public class GoodsController {
 
         model.addAttribute("goodsList",goodsList);
 
-        return "goods_list";
+        //return "goods_list";
+        //取缓存
+        String html=redisService.get(GoodsKey.getGoodsList,"",String.class);
+        if(!StringUtils.isEmpty(html)){
+            return html;
+        }
+        SpringWebContext ctx=new SpringWebContext(request,response,request.getServletContext(),request.getLocale(),model.asMap(),  applicationContext);
+        //手动渲染
+        html=thymeleafViewResolver.getTemplateEngine().process("goods_list",ctx);
+        if(!StringUtils.isEmpty(html)){
+            redisService.set(GoodsKey.getGoodsList,"gl",html);
+        }
+        return html;
+
+
     }
     //商品详情页
     @RequestMapping("/to_detail/{goodsId}")
